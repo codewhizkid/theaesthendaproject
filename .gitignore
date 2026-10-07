@@ -1,0 +1,23 @@
+# Local credentials and configuration
+.env*
+*.pem
+*.key
+
+# Dependencies and generated output
+node_modules/
+.next/
+.vinext/
+dist/
+build/
+out/
+coverage/
+.vercel/
+.wrangler/
+*.tsbuildinfo
+next-env.d.ts
+*.log
+
+# Local tools and operating-system metadata
+.DS_Store
+.supabase/
+supabase/.temp/
