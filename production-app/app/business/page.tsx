@@ -1,6 +1,8 @@
 import { BusinessForm } from "@/components/business/business-form";
+import { requireUser } from "@/lib/supabase/require-user";
 
-export default function BusinessPage() {
+export default async function BusinessPage() {
+  await requireUser();
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-16 text-white">
       <div className="mx-auto max-w-2xl rounded-3xl border border-slate-800 bg-slate-900 p-8 shadow-2xl shadow-cyan-950/30">

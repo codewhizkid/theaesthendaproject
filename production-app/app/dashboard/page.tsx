@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { requireUser } from "@/lib/supabase/require-user";
 
 const modules = [
   "Business account",
@@ -11,7 +12,8 @@ const modules = [
   "Audit log",
 ];
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  await requireUser();
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-10 text-slate-50">
       <div className="mx-auto max-w-6xl">
