@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/client";
+import { hasVerifiedSession } from "@/lib/auth-session";
 
 export function SignInForm() {
   const router = useRouter();
@@ -26,7 +27,7 @@ export function SignInForm() {
               email,
               password,
               options: {
-                emailRedirectTo: `${window.location.origin}/dashboard`,
+                emailRedirectTo: `${window.location.origin}/auth/callback`,
               },
             })
           : supabase.auth.signInWithPassword({ email, password });
@@ -39,13 +40,22 @@ export function SignInForm() {
         return;
       }
 
-      if (data.user) {
+      if (mode === "sign_up" && !data.session) {
+        setPassword("");
+        setMessage("Check your email for a confirmation link. Open it in this browser to continue. If you already have an account, sign in instead.");
+        return;
+      }
+
+      if (await hasVerifiedSession(supabase.auth, data.session)) {
         setMessage(
           mode === "sign_up"
             ? "Account created. Continue to set up your business account."
             : "Signed in successfully. Redirecting to the business setup flow.",
         );
         router.push("/business");
+        router.refresh();
+      } else {
+        setMessage("We could not verify your session. Please sign in again.");
       }
     } catch (error) {
       const fallback = error instanceof Error ? error.message : "Authentication is not configured yet.";
@@ -121,7 +131,7 @@ export function SignInForm() {
             : "Signing in..."
           : mode === "sign_up"
             ? "Create account"
-            : "Continue to dashboard"}
+            : "Sign in"}
       </button>
 
       <p className="text-sm text-slate-300">{message}</p>
