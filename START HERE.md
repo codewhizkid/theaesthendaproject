@@ -1,3 +1,9 @@
+## Dashboard visual implementation — October 19, 2026 (partial status update)
+
+The production `/dashboard` now implements the first Aesthenda visual direction: ivory, plum, sage, serif headings, responsive navigation, and the daily overview layout. Authentication remains required. Scheduling, payments, reminders, and publishing are **not connected**; the screen displays unavailable states rather than demo records or invented totals. Business setup remains accessible. This is a frontend implementation, not production completion or deployment evidence.
+
+See [dashboard handoff and verification](production-app/docs/dashboard-visual-concept-01.md) for scope, checks, previews, and remaining work. This partial update does not revalidate the older project-wide status below.
+
 # The Aesthenda Project
 
 ## Where the project stands
