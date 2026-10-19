@@ -10,7 +10,7 @@ for (const path of ["/dashboard", "/business", "/dashboard/settings", "/business
     assert.equal(new URL(response.headers.get("location"), origin).pathname, "/auth/sign-in");
     assert.match(response.headers.get("cache-control"), /no-store/);
     const body = await response.text();
-    assert.doesNotMatch(body, /Aesthenda operating shell|Create your production business/);
+    assert.doesNotMatch(body, /Aesthenda operating shell|Create your production business|YOUR DAILY OVERVIEW|Today’s appointments/);
   });
 }
 
