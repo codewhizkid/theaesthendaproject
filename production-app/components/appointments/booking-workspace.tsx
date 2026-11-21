@@ -1,0 +1,30 @@
+import '@/components/calendar/calendar.css';
+import {WorkspacePage,WorkspacePanel} from '@/components/layout/workspace-page';
+import {BookingPicker} from './booking-picker';
+import type {CalendarContext,AppointmentSearch} from '@/lib/calendar/navigation';
+import {parsePreferredMinute} from '@/lib/calendar/availability';
+import {randomUUID} from 'node:crypto';
+import Link from 'next/link';
+import {redirect} from 'next/navigation';
+import {requireUser} from '@/lib/supabase/require-user';
+import {readBusinessSetup} from '@/lib/business/persistence';
+import {readClients} from '@/lib/clients/persistence';
+import {readServices} from '@/lib/services/persistence';
+import {readAppointments} from '@/lib/appointments/persistence';
+import {uuid,validDate} from '@/lib/appointments/input';
+export async function AppointmentBookingWorkspace({searchParams,calendar}:{searchParams:Promise<AppointmentSearch>;calendar?:CalendarContext}){
+ const user=await requireUser();const business=await readBusinessSetup(user.id);if(!business)redirect('/business');
+ const params=await searchParams;const preferredMinute=parsePreferredMinute(params.minute);
+ const date=typeof params.date==='string'&&validDate(params.date)?params.date:null;
+ const q=typeof params.q==='string'?params.q.trim().slice(0,160):'';
+ const [schedule,directory,services]=await Promise.all([readAppointments(user.id,date),readClients(user.id,null,q),readServices(user.id)]);
+ const availableServices=services.filter(s=>s.status==='draft');
+ const candidateClient=typeof params.client==='string'&&uuid(params.client)?(await readClients(user.id,params.client)).clients[0]:undefined;
+ const selectedClient=candidateClient?.status==='archived'?undefined:candidateClient;
+ if(selectedClient&&!directory.clients.some(c=>c.id===selectedClient.id))directory.clients.unshift(selectedClient);
+ const service=typeof params.service==='string'&&uuid(params.service)&&availableServices.some(s=>s.id===params.service)?params.service:'';
+ const content=!schedule.timezone?<p><Link href="/availability" className="underline">Save your availability and time zone</Link> before adding an appointment.</p>:<BookingPicker initialClients={{clients:directory.clients.map(({id,firstName,lastName,email,phone})=>({id,firstName,lastName,email,phone})),hasMore:directory.hasMore,message:''}} initialQuery={q} initialClient={selectedClient?{id:selectedClient.id,firstName:selectedClient.firstName,lastName:selectedClient.lastName,email:selectedClient.email,phone:selectedClient.phone}:undefined} services={availableServices} initialService={service} initialDate={schedule.date} preferredMinute={preferredMinute??undefined} calendar={calendar} requestKey={randomUUID()}/>;
+ const description=`Choose a client, service, and time${schedule.timezone?` · ${schedule.timezone.replaceAll('_',' ')}`:''}`;
+ if(calendar)return <section className="ac-popup-content"><div className="space-y-6"><header><h1 className="font-serif text-3xl">New appointment</h1><p className="aw-description">{description}</p></header>{content}</div></section>;
+ return <WorkspacePage title="New appointment" wide businessName={business.businessName} description={description}><WorkspacePanel>{content}</WorkspacePanel></WorkspacePage>;
+}

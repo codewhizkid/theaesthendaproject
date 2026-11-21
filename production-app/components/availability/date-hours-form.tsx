@@ -1,0 +1,24 @@
+'use client';
+import {useActionState,useState} from 'react';
+import {timezoneLabel} from './timezone-picker';
+import {saveDateHours} from '@/app/availability/actions';
+import {TimePicker} from './time-picker';
+import {displayTime} from '@/lib/availability/time-display';
+import type {DateHours,DatePeriod} from '@/lib/availability/date-input';
+const field='rounded-lg border border-stone-300 bg-white px-3 py-2';
+export function DateHoursForm({entries,weeklyRevision,timezone,requestKey}:{entries:DateHours[];weeklyRevision:number;timezone:string;requestKey:string}){
+ const [editing,setEditing]=useState(false);
+ const [date,setDate]=useState('');const [mode,setMode]=useState<DateHours['mode']>('closed');const [windows,setWindows]=useState<DatePeriod[]>([]);const [state,action,pending]=useActionState(saveDateHours,{message:''});
+ function choose(date:string){setEditing(true);setDate(date);const saved=entries.find(e=>e.date===date);setMode(saved?.mode??'closed');setWindows(saved?.windows??[]);}
+ function change(index:number,part:'startMinute'|'endMinute',minute:number){setWindows(windows.map((w,i)=>i===index?{...w,[part]:minute}:w));}
+ return <section className="aw-panel" id="special-dates"><header className="aw-group-heading"><div><h2>Special dates</h2><p>Exceptions to your regular weekly hours.</p></div>{!editing&&<button type="button" className="aw-secondary" onClick={()=>{setDate('');setMode('closed');setWindows([]);setEditing(true);}}>＋ Add date</button>}</header>
+<ul className="divide-y divide-stone-200">{entries.filter(e=>e.mode!=='weekly').map(e=><li key={e.date} className="aw-row"><div><strong>{e.date}</strong><p>{e.mode==='closed'?'Closed':e.windows.map(w=>`${displayTime(w.startMinute)}–${displayTime(w.endMinute)}`).join(', ')} · {timezoneLabel(e.timezone)}</p></div><button className="aw-secondary" type="button" disabled={pending} onClick={()=>choose(e.date)}>Edit<span className="sr-only"> {e.date}</span></button></li>)}</ul>{!entries.some(e=>e.mode!=='weekly')&&<div className="aw-panel-body text-center text-stone-600">No special dates saved. Add a date to close the day or set different hours.</div>}
+ {editing&&<div className="aw-panel-body space-y-5 border-t border-stone-200"><h3 className="font-serif text-2xl">{entries.some(entry=>entry.date===date&&entry.mode!=='weekly')?'Edit date hours':'Add a special date'}</h3><p className="text-sm text-stone-600">These hours override the weekly schedule for one date in {timezoneLabel(timezone)}. Existing appointments are never moved or cancelled.</p>
+ <form action={action} className="space-y-5"><input type="hidden" name="actionVersion" value="1"/><input type="hidden" name="requestKey" value={requestKey}/><input type="hidden" name="revision" value={entries.find(e=>e.date===date)?.revision??0}/><input type="hidden" name="weeklyRevision" value={weeklyRevision}/><input type="hidden" name="windows" value={JSON.stringify(mode==='custom'?windows:[])}/>
+ <fieldset disabled={pending} className="space-y-5 disabled:opacity-60"><label className="block">Date<input className={`${field} ml-3`} autoFocus type="date" name="date" min="2000-01-01" max="2100-12-31" required value={date} onChange={e=>choose(e.target.value)}/></label>
+ <label className="block">Hours for this date<select className={`${field} ml-3`} name="mode" value={mode} onChange={e=>{setMode(e.target.value as DateHours['mode']);if(e.target.value==='custom'&&!windows.length)setWindows([{startMinute:540,endMinute:1020}]);}}><option value="closed">Closed all day</option><option value="custom">Special hours</option><option value="weekly">Use regular weekly hours</option></select></label>
+ {mode==='custom'&&<div className="space-y-4">{windows.map((w,i)=><div className="flex flex-wrap items-center gap-3" key={i}><TimePicker title="Start" label={`Special period ${i+1} start`} value={w.startMinute} onChange={minute=>change(i,'startMinute',minute)}/><TimePicker title="End" label={`Special period ${i+1} end`} value={w.endMinute} end onChange={minute=>change(i,'endMinute',minute)}/><button type="button" onClick={()=>setWindows(windows.filter((_,n)=>n!==i))} className="underline" aria-label={`Remove special period ${i+1}`}>Remove</button></div>)}<button type="button" disabled={windows.length>=16} className="rounded-lg border px-3 py-2" onClick={()=>setWindows([...windows,{startMinute:540,endMinute:1020}])}>Add period</button><p className="text-sm">Periods cannot overlap. End 12:00 AM means midnight at the end of this date; split overnight hours across two dates.</p></div>}
+ <button className="rounded-lg bg-[#382b3c] px-5 py-3 text-white">{pending?'Saving…':'Save date hours'}</button><button className="ml-4 inline-flex min-h-11 items-center underline" type="button" onClick={()=>setEditing(false)}>Cancel</button></fieldset><p role="alert">{state.message}</p></form>
+</div>}
+ </section>;
+}

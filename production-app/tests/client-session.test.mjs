@@ -1,0 +1,6 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {clientSessionCookieOptions,clientPasswordError} from '../lib/client-access/session.ts';
+test('remembered sessions persist for 30 days without storing passwords',()=>{const options=clientSessionCookieOptions({httpOnly:true,path:'/client',sameSite:'lax',maxAge:999999,expires:new Date()},true);assert.equal(options.maxAge,30*86400);assert.equal(options.expires,undefined);assert.equal(options.httpOnly,true);assert.equal(options.path,'/client');});
+test('non-remembered sign-in uses browser session cookies through refresh',()=>{const base={maxAge:999,expires:new Date(),path:'/client',httpOnly:true};const result=clientSessionCookieOptions(base,false);assert.equal('maxAge' in result,false);assert.equal('expires' in result,false);assert.equal(base.maxAge,999);});
+test('logout deletion survives both persistence preferences',()=>{for(const remember of [true,false])assert.equal(clientSessionCookieOptions({maxAge:0,path:'/client'},remember).maxAge,0);});
+test('password setup requires matching bounded passwords',()=>{assert.ok(clientPasswordError('short','short'));assert.ok(clientPasswordError('a'.repeat(129),'a'.repeat(129)));assert.ok(clientPasswordError('a'.repeat(12),'b'.repeat(12)));assert.equal(clientPasswordError('a'.repeat(12),'a'.repeat(12)),null);});

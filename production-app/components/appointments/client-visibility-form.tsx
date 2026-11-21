@@ -1,0 +1,9 @@
+ 'use client';
+import {useActionState} from 'react';
+import Link from 'next/link';
+import {saveClientVisibilitySettings} from '@/app/settings/client-visibility-actions';
+import type {ClientBookingVisibility} from '@/lib/appointments/client-visibility';
+export function ClientVisibilityForm({preferences}:{preferences:ClientBookingVisibility}){
+ const [state,action,pending]=useActionState(saveClientVisibilitySettings,{message:''});
+ return <form action={action} className="space-y-4"><input type="hidden" name="revision" value={preferences.revision}/><fieldset disabled={pending||!preferences.available} className="aw-panel disabled:opacity-60"><section className="aw-setting-group space-y-3"><h2>Times shown to clients</h2><p className="text-sm text-stone-600">Clients choose starts on the hour or half hour, such as 10:00, 10:30, and 11:00. Your own calendar keeps every available start.</p><label className="block max-w-sm">Available times to show<select name="showPercent" defaultValue={preferences.showPercent} className="mt-2 min-h-11 w-full rounded-lg border border-stone-300 px-3 py-2">{[20,50,80,100].map(percent=><option key={percent} value={percent}>{percent}%{percent===100?' — All available times':''}</option>)}</select></label><p className="text-sm text-stone-600">We spread the choices across each day. For example, 50% shows 5 of 10 eligible times. Small lists round up so at least one time remains when available. This limits choices, not how many appointments you can receive.</p><Link href="/booking-preview" className="aw-back">Preview your booking page</Link></section><div className="aw-setting-group flex justify-end"><button className="aw-primary">{pending?'Saving…':'Save client booking settings'}</button></div></fieldset>{!preferences.available&&<p role="status">Saved visibility controls are being connected. The preview currently shows all eligible half-hour starts.</p>}<p role="status">{state.message}</p></form>;
+}

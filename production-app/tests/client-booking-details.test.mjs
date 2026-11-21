@@ -1,0 +1,15 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {parseBookingDetails,buildBookingReview} from '../lib/appointments/client-booking-details.ts';
+const input=overrides=>{const form=new FormData();for(const [key,value] of Object.entries({firstName:' Alex ',lastName:' Smith ',email:'alex@example.invalid',phone:'+1 212 555 0100',verificationChannel:'email',serviceId:'00000000-0000-4000-8000-000000000001',serviceToken:'a'.repeat(32),startAt:'2033-01-03T15:30:00Z',...overrides}))form.set(key,value);return form;};
+test('booking details trim contacts, default permissions off, ignore forged verification/payment flags',()=>{const value=parseBookingDetails(input({verified:'true',paid:'true',status:'confirmed',updatesEmail:'on'}));assert.equal(value.contact.firstName,'Alex');assert.equal(value.contact.updatesEmail,true);assert.equal(value.contact.updatesText,false);assert.equal(value.startAt,'2033-01-03T15:30:00.000Z');assert.equal('verified' in value,false);assert.equal('paid' in value,false);assert.equal('status' in value,false);});
+test('verification destination and update permissions require the corresponding contact',()=>{assert.throws(()=>parseBookingDetails(input({email:''})),/email address/);assert.throws(()=>parseBookingDetails(input({verificationChannel:'text',phone:''})),/mobile number/);assert.throws(()=>parseBookingDetails(input({verificationChannel:'text',email:'',updatesEmail:'on'})),/email address/);assert.throws(()=>parseBookingDetails(input({phone:'',updatesText:'on'})),/mobile number/);assert.equal(parseBookingDetails(input({verificationChannel:'text',email:''})).contact.verificationChannel,'text');});
+test('invalid contacts, identities, instants and service versions fail review input validation',()=>{for(const overrides of [{firstName:''},{email:'invalid'},{phone:'123'},{verificationChannel:'call'},{serviceId:'forged'},{startAt:'2033-01-03'},{serviceToken:''}])assert.throws(()=>parseBookingDetails(input(overrides)));});
+
+test('review binds to freshly offered slots and service version, using server price/duration',()=>{
+ const parsed=parseBookingDetails(input({priceCents:'1',durationMinutes:'1'}));
+ const available={timezone:'America/New_York',service:{id:parsed.serviceId,name:'Color',durationMinutes:90,priceCents:12000,currency:'USD',token:parsed.serviceToken},slots:[{startAt:parsed.startAt}]};
+ const result=buildBookingReview(parsed,available,'2033-01-01T12:00:00Z');assert.equal(result.service.priceCents,12000);assert.equal(result.endAt,'2033-01-03T17:00:00.000Z');assert.equal(result.timezone,'America/New_York');
+ assert.throws(()=>buildBookingReview(parsed,{...available,slots:[]},result.checkedAt),/no longer offered/);
+ assert.throws(()=>buildBookingReview(parsed,{...available,service:{...available.service,token:'b'.repeat(32)}},result.checkedAt),/service has changed/);
+ assert.throws(()=>buildBookingReview(parsed,{...available,service:{...available.service,id:'00000000-0000-4000-8000-000000000002'}},result.checkedAt),/service has changed/);
+});
