@@ -24,7 +24,7 @@ export async function middleware(request: NextRequest) {
         const client=createServerClient(config.url,config.key,{cookieOptions:{name:clientAuthCookieName,path:'/client',sameSite:'lax',httpOnly:true,secure:appCookieSecure(process.env)},cookies:{getAll(){return request.cookies.getAll();},setAll(values){values.forEach(({name,value})=>request.cookies.set(name,value));response=NextResponse.next({request});values.forEach(({name,value,options})=>response.cookies.set(name,value,clientSessionCookieOptions(options,request.cookies.get(clientRememberCookie)?.value!=='0')));}}});
         const {data,error}=await client.auth.getUser();verified=!error&&!!verifiedClientIdentity(data.user);
       }catch{}
-      if(!verified&&!publicPath){const redirect=new NextResponse(null,{status:307,headers:{Location:new URL('/client/sign-in',request.url).toString(),'Cache-Control':'private, no-store','Referrer-Policy':'no-referrer'}});response.cookies.getAll().forEach(cookie=>redirect.cookies.set(cookie));return redirect;}
+      if(!verified&&!publicPath){const redirect=new NextResponse(null,{status:307,headers:{Location:'/client/sign-in','Cache-Control':'private, no-store','Referrer-Policy':'no-referrer'}});response.cookies.getAll().forEach(cookie=>redirect.cookies.set(cookie));return redirect;}
     }
     response.headers.set('Cache-Control','private, no-store');response.headers.set('Referrer-Policy','no-referrer');return response;
   }
@@ -34,9 +34,7 @@ export async function middleware(request: NextRequest) {
   if (!isPrivate && path !== '/login') return response;
 
   function signInRedirect() {
-    const destination = new URL("/auth/sign-in", request.url);
-    destination.host = request.headers.get("host") ?? destination.host;
-    const redirect = NextResponse.redirect(destination);
+    const redirect = new NextResponse(null, {status:307, headers:{Location:"/auth/sign-in"}});
     redirect.headers.set("Cache-Control", "no-store");
     response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
     return redirect;
