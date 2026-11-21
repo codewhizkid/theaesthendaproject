@@ -1,0 +1,34 @@
+{
+  "name": "production-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "test:unit": "node --experimental-strip-types --test tests/auth-session.test.mjs tests/supabase-config.test.mjs tests/setup-input.test.mjs tests/services-input.test.mjs tests/availability-input.test.mjs tests/date-hours.test.mjs tests/time-display.test.mjs tests/clients-input.test.mjs tests/appointments-input.test.mjs tests/calendar-display.test.mjs tests/calendar-changes.test.mjs tests/calendar-availability.test.mjs tests/calendar-navigation.test.mjs tests/blocks-input.test.mjs tests/client-visibility.test.mjs tests/client-booking-details.test.mjs tests/client-identity.test.mjs tests/guest-verification.test.mjs tests/guest-email.test.mjs tests/booking-confirmation.test.mjs tests/client-session.test.mjs tests/client-password-actions.test.mjs tests/client-landing.test.mjs tests/owner-confirmation.test.mjs tests/dashboard-overview.test.mjs tests/deployment-config.test.mjs",
+    "test:database": "node scripts/test-setup-database.mjs",
+    "migrate": "node scripts/migrate.mjs",
+    "dev:staging": "node scripts/staging.mjs"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.117.2",
+    "next": "16.3.8",
+    "pg": "^8.23.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.8",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
