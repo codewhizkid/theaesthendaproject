@@ -1,8 +1,14 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {appOrigin,appCookieSecure} from '../lib/app-origin.ts';
+import {appOrigin,appCookieSecure,appSignInRedirect} from '../lib/app-origin.ts';
 import {databaseConnectionConfig} from '../lib/database-connection.ts';
 import {guestMailConfig} from '../lib/guest-booking/resend-transport.ts';
 import {previewAccess} from '../lib/preview-access.ts';
+test('hosted sign-in redirects discard the internal listening port and retain the configured HTTPS host',()=>{
+ const env={AESTHENDA_HOSTED_PREVIEW:'1',AESTHENDA_PUBLIC_ORIGIN:'https://preview.example.invalid'};
+ for(const path of ['/auth/sign-in','/client/sign-in'])assert.equal(appSignInRedirect(path,'http://internal:10000/dashboard',env),'https://preview.example.invalid'+path);
+ assert.equal(appSignInRedirect('/auth/sign-in','http://127.0.0.1:3190/dashboard',{}),'http://127.0.0.1:3190/auth/sign-in');
+ assert.throws(()=>appSignInRedirect('/auth/sign-in','http://internal:10000/dashboard',{AESTHENDA_HOSTED_PREVIEW:'1'}));
+});
 test('hosted testing gate fails closed and requires the separate preview credential',async()=>{
  const key='b'.repeat(64), env={RENDER:'true',AESTHENDA_PREVIEW_ACCESS_KEY:key};
  assert.equal(await previewAccess(null,{}),'allow');

@@ -12,3 +12,7 @@ export function appOrigin(env:AppOriginEnv){
 export function appCookieSecure(env:AppOriginEnv){
  try{return new URL(appOrigin(env)).protocol==='https:';}catch{return env.NODE_ENV==='production'||env.AESTHENDA_HOSTED_PREVIEW==='1'||env.VERCEL==='1';}
 }
+export function appSignInRedirect(path:'/auth/sign-in'|'/client/sign-in',requestUrl:string,env:AppOriginEnv){
+ const origin=env.AESTHENDA_HOSTED_PREVIEW==='1'||env.VERCEL==='1'?appOrigin(env):requestUrl;
+ return new URL(path,origin).toString();
+}
