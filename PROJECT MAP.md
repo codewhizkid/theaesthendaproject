@@ -1,6 +1,6 @@
 # Aesthenda project map
 
-Cleanup review: November 23, 2026. Applied to the local project with Roe’s approval. Published as a separate cleanup branch; the deployment branch is unchanged.
+Cleanup review: November 23, 2026. Applied to the local project with Roe’s approval. Cleanup merged into `aesthenda-render-preview` through PR #2. The deployment branch now includes the cleanup; database records and deployment configuration were not changed.
 
 ## Where things belong
 
@@ -28,6 +28,10 @@ Cleanup review: November 23, 2026. Applied to the local project with Roe’s app
 - Local staging launcher pins Supabase project `srwjgtvmlrkdqtxetjuu` (`aesthenda-staging`). This review did not independently inspect Render's database connection secrets.
 - Real account and appointment information belongs in the database, not GitHub.
 - Keep passwords, `.env` files and private keys out of GitHub.
+
+## Branch organization
+
+`aesthenda-render-preview` is the current application branch used by Render. `main` retains the earlier baseline, governing instructions, prototype and reference documents; its README links to this current app. The two branches have separate Git histories and were not forcibly combined. The older dashboard draft PR #1 is closed; its branch is preserved because it contains unique history and remains the branch of the local checkout.
 
 ## Local and GitHub alignment
 
