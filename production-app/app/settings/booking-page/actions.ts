@@ -1,8 +1,8 @@
 'use server';
 
-import {revalidatePath} from 'next/cache';
+import {refresh, revalidatePath} from 'next/cache';
 import {requireUser} from '@/lib/supabase/require-user';
-import {saveBookingPageTheme} from '@/lib/booking-theme/persistence';
+import {saveBookingPageTheme, saveWorkspaceMatch} from '@/lib/booking-theme/persistence';
 import {BOOKING_COLOR_FIELDS, parseBookingTheme} from '@/lib/booking-theme/input';
 
 type SaveDesignResult = {message: string; failed?: boolean};
@@ -40,4 +40,19 @@ export async function saveBookingPageDesign(_previous: SaveDesignResult, form: F
   revalidatePath('/settings/booking-page');
   revalidatePath('/booking-preview');
   return {message: 'Booking page design saved.'};
+}
+
+export async function changeWorkspaceMatch(_previous: SaveDesignResult, form: FormData): Promise<SaveDesignResult> {
+  const user = await requireUser();
+  const value = form.get('match');
+  if (value !== 'on' && value !== 'off') return {message: 'Choose a workspace appearance.', failed: true};
+
+  try {
+    await saveWorkspaceMatch(user.id, value === 'on');
+  } catch {
+    return {message: 'The workspace appearance could not be saved. Please try again.', failed: true};
+  }
+
+  refresh();
+  return {message: value === 'on' ? 'Your workspace now matches your booking colors.' : 'Aesthenda’s default workspace colors are back.'};
 }

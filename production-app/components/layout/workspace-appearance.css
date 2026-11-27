@@ -1,0 +1,163 @@
+/* Theme opt-in is placed only on signed-in salon workspace shells. */
+.workspace-matched {
+  --workspace-line: color-mix(in srgb, var(--workspace-ink) 28%, var(--workspace-panel));
+  background: var(--workspace-page);
+  color: var(--workspace-ink);
+}
+
+.workspace-matched :is(.aw-page, .aw-group-heading, .ac-working-period:hover) {
+  background: var(--workspace-page);
+  color: var(--workspace-ink);
+}
+
+.workspace-matched :is(.aw-page-heading h1, .ae-page-header h1) {
+  color: var(--workspace-heading);
+}
+
+.workspace-matched :is(.aw-description, .aw-eyebrow, .aw-group-heading p, .aw-tabs a,
+  .sn-sidebar .sn-platform, .sn-dialog-brand .sn-platform, .sn-account summary > span > span,
+  .sn-account-options button, .sn-unavailable, .ac-help, .ac-corner, .ac-axis, .ab-choice > span,
+  .cp-preferences thead th, .cp-preferences th[scope=row] span, .ac-timing-review li span) {
+  color: var(--workspace-ink);
+}
+
+.workspace-matched :is(.sn-sidebar, .sn-dialog-brand, .aw-panel, .aw-category, .aw-secondary,
+  .ac-dialog, .ac-dialog-footer, .ac-contact-options, .ac-hours-summary details,
+  .ac-scroll, .ac-corner, .ac-day-heading, .ac-axis, .ac-agenda, .ab-manage-options,
+  .ac-navigation a, .ac-view a, .ac-button, .ac-toolbar button, .ac-date-jump button,
+  .ab-choice, .ab-time, .ab-selected, .ab-loading) {
+  background: var(--workspace-panel);
+  color: var(--workspace-ink);
+  border-color: var(--workspace-line);
+}
+
+.workspace-matched :is(.sn-account, .sn-mobile-nav, .aw-row, .aw-setting-group,
+  .aw-group-heading, .aw-service-groups, .aw-service-group .ab-choice,
+  .ac-day-body, .ac-hour-line, .ac-quarter-line, .ac-agenda a, .cp-preferences th, .cp-preferences td) {
+  border-color: var(--workspace-line);
+}
+
+.workspace-matched :is(.sn-sidebar, .sn-dialog-brand) .sn-salon-name {
+  color: var(--workspace-ink);
+}
+
+.workspace-matched :is(.sn-nav-item:not(.sn-unavailable):hover, .sn-avatar, .aw-service-group h3,
+  .ab-choice:hover, .ab-time:hover, .ab-manage-options a:hover, .ab-manage-options button:hover:not(:disabled)) {
+  background: var(--workspace-page);
+  color: var(--workspace-ink);
+}
+
+.workspace-matched :is(.aw-primary, .sn-nav-item[aria-current=page], .aw-category[aria-pressed=true],
+  .ac-primary, .ac-view a[aria-current=page], .ac-button[aria-current=page], .ab-time[aria-pressed=true]) {
+  background: var(--workspace-accent);
+  color: var(--workspace-on-accent);
+  border-color: var(--workspace-accent-text);
+}
+
+.workspace-matched :is(.aw-tabs a[aria-current=page], .aw-service-group .ab-choice[aria-pressed=true]) {
+  color: var(--workspace-ink);
+  border-color: var(--workspace-accent-text);
+}
+
+.workspace-matched .aw-service-group .ab-choice[aria-pressed=true] {
+  background: var(--workspace-page);
+  box-shadow: inset 3px 0 var(--workspace-accent-text);
+}
+
+.workspace-matched .ac-day-body {
+  background: var(--workspace-panel);
+}
+
+.workspace-matched :is(.ac-working-period, .ac-working-key) {
+  background: var(--workspace-panel);
+}
+
+/* Calendar status blocks use established foregrounds on their own surfaces. */
+.workspace-matched .ac-time-block { color: #382b3c; }
+.workspace-matched .ac-today { color: #405538; }
+.workspace-matched .ab-time-summary { color: #354733; }
+
+.workspace-matched :is(.aw-page, .ac-workspace-dialog) :is(
+  input:not([type=hidden], [type=checkbox], [type=radio], [type=color]), select, textarea
+):not(.bp-page *) {
+  background: var(--workspace-panel);
+  color: var(--workspace-ink);
+  border-color: var(--workspace-accent-text);
+  color-scheme: var(--workspace-control-scheme);
+}
+
+.workspace-matched :is(.aw-page, .ac-workspace-dialog) :is(input, textarea):not(.bp-page *)::placeholder {
+  color: var(--workspace-ink);
+  opacity: 1;
+}
+
+.workspace-matched :is(.aw-page, .ac-workspace-dialog) :is([type=checkbox], [type=radio]):not(.bp-page *) {
+  accent-color: var(--workspace-accent-text);
+}
+
+.workspace-matched :is(.aw-page, .ac-workspace-dialog) :is(.bg-white, .bg-stone-50, .bg-stone-100):not(.bp-page *) {
+  background: var(--workspace-panel);
+  color: var(--workspace-ink);
+}
+
+.workspace-matched :is(.aw-page, .ac-workspace-dialog) :is(.text-stone-500, .text-stone-600, .text-stone-700):not(.bp-page *) {
+  color: var(--workspace-ink);
+}
+
+.workspace-matched :is(.aw-page, .ac-workspace-dialog) .bg-\[\#f7f3ed\]:not(.bp-page *) {
+  background: var(--workspace-page);
+  color: var(--workspace-ink);
+}
+
+.workspace-matched :is(.aw-page, .ac-workspace-dialog) .bg-\[\#382b3c\]:not(.bp-page *) {
+  background: var(--workspace-accent);
+  color: var(--workspace-on-accent);
+}
+
+.workspace-matched :focus-visible:not(.bp-page *) {
+  outline-color: var(--workspace-ink);
+}
+
+.workspace-matched.ae-dashboard {
+  --ae-ivory: var(--workspace-page);
+  --ae-paper: var(--workspace-panel);
+  --ae-plum: var(--workspace-ink);
+  --ae-muted: var(--workspace-ink);
+  --ae-line: var(--workspace-line);
+  background: var(--workspace-page);
+  color: var(--workspace-ink);
+}
+
+.workspace-matched.ae-dashboard :is(.ae-card, .ae-stat, .ae-secondary, .ae-up-next) {
+  background: var(--workspace-panel);
+  color: var(--workspace-ink);
+  border-color: var(--workspace-line);
+}
+
+.workspace-matched.ae-dashboard :is(.ae-primary, .ae-up-next .ae-primary) {
+  background: var(--workspace-accent);
+  color: var(--workspace-on-accent);
+  border-color: var(--workspace-accent-text);
+}
+
+.workspace-matched.ae-dashboard :is(.ae-stat-link:hover, .ae-visit:hover, .ae-visit-next,
+  .ae-visit-next:hover, .ae-quick-links > a:hover, .ae-secondary:hover, .ae-request-list a:hover) {
+  background: var(--workspace-page);
+}
+
+.workspace-matched.ae-dashboard :is(.ae-eyebrow, .ae-next-content h2, .ae-next-content p,
+  .ae-up-next .ae-text-link, .ae-section-header .ae-text-link, .ae-visit-time > span, .ae-main-footer) {
+  color: var(--workspace-ink);
+}
+
+.workspace-matched.ae-dashboard :is(.ae-stat-icon, .ae-shortcut-icon, .ae-up-next .ae-empty-icon, .ae-count) {
+  background: var(--workspace-page);
+  color: var(--workspace-accent-text);
+  border-color: var(--workspace-line);
+}
+
+.workspace-matched.ae-dashboard .ae-stat-attention .ae-stat-icon { background: #f1e5d6; color: #795830; }
+.workspace-matched.ae-dashboard .ae-up-next .ae-status-confirmed { background: #e6ecdf; color: #405538; }
+.workspace-matched.ae-dashboard .ae-up-next .ae-status-pending { background: #f5e7d1; color: #735224; }
+.workspace-matched.ae-dashboard :is(.ae-next-footer, .ae-main-footer) { border-color: var(--workspace-line); }
+.workspace-matched.ae-dashboard .ae-visit-next { box-shadow: inset 3px 0 var(--workspace-accent-text); }
