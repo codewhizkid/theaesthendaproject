@@ -1,0 +1,64 @@
+/* Only the salon booking preview and the design editor opt in. */
+.bp-page.bp-themed {
+  --bp-ink: var(--booking-ink);
+  --bp-muted: var(--booking-ink);
+  --bp-accent: var(--booking-accent);
+  background: var(--booking-page-bg);
+  color: var(--booking-ink);
+  font-family: var(--booking-font);
+}
+
+.bp-themed .bp-header {
+  background: var(--booking-page-bg);
+  color: var(--booking-header-ink);
+}
+
+.bp-themed :is(.bp-powered, .bp-header-label) {
+  color: var(--booking-header-ink);
+}
+
+.bp-themed .bp-preview-note {
+  color: #3f3142;
+  font-family: var(--font-geist-sans), Arial, sans-serif;
+}
+
+.bp-themed :is(.bp-summary, .bp-service, .bp-time, .bp-empty, .bp-review-card, .bp-entry-choice, .bp-categories button),
+.bp-themed :is(.bp-search, .bp-date, .bp-details-fields) input:not([type=checkbox]):not([type=radio]):not([type=hidden]) {
+  background: var(--booking-card-bg);
+  color: var(--booking-ink);
+}
+
+.bp-themed :is(.bp-search, .bp-date, .bp-details-fields) input::placeholder {
+  color: var(--booking-ink);
+  opacity: 1;
+}
+
+.bp-themed :is(.bp-service[data-selected=true], .bp-entry-choice:hover) {
+  border-color: var(--booking-accent-ink);
+}
+
+.bp-themed .bp-service[data-selected=true] {
+  box-shadow: 0 0 0 1px var(--booking-accent-ink);
+}
+
+.bp-themed :is(.bp-eyebrow, .bp-review-note) {
+  color: var(--booking-accent-ink);
+}
+
+.bp-themed :is(.bp-primary, .bp-progress [aria-current=step] > span, .bp-categories [aria-pressed=true], .bp-time[data-selected=true]) {
+  background: var(--booking-accent);
+  color: var(--booking-button-ink);
+  border-color: var(--booking-accent-ink);
+}
+
+.bp-themed input:is([type=radio], [type=checkbox]) {
+  accent-color: var(--booking-accent-ink);
+}
+
+.bp-themed :is(:focus-visible, .bp-time:focus-within) {
+  outline-color: var(--booking-ink);
+}
+
+.bp-themed .bp-preview-note :focus-visible {
+  outline-color: #3f3142;
+}
