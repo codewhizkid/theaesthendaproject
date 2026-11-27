@@ -3,13 +3,35 @@ import {redirect} from 'next/navigation';
 import {requireUser} from '@/lib/supabase/require-user';
 import {readBusinessSetup} from '@/lib/business/persistence';
 import {readBookingPageTheme} from '@/lib/booking-theme/persistence';
+import {readBookingPreviewCatalog} from '@/lib/appointments/booking-preview-catalog';
 import {BookingThemeEditor} from '@/components/booking-preview/booking-theme-editor';
 import {WorkspacePage} from '@/components/layout/workspace-page';
-import '@/app/booking-preview/booking-preview.css';
-export const dynamic='force-dynamic';
-export default async function BookingPageDesignPage(){
- const user=await requireUser();
- const [business,theme]=await Promise.all([readBusinessSetup(user.id),readBookingPageTheme(user.id)]);
- if(!business)redirect('/business');
- return <WorkspacePage title="Booking page design" businessName={business.businessName} description="Give your booking page a look that feels like your studio." action={<Link className="aw-secondary" href="/booking-preview">Open full preview</Link>} wide><div className="space-y-6"><p className="bte-note">Your clients will see this design when online booking is published. For now, the preview beside these controls shows exactly how it will look.</p><BookingThemeEditor key={theme.revision} theme={theme.theme} revision={theme.revision} businessName={business.businessName}/></div></WorkspacePage>;
+
+export const dynamic = 'force-dynamic';
+
+export default async function BookingPageDesignPage() {
+  const user = await requireUser();
+  const business = await readBusinessSetup(user.id);
+  if (!business) redirect('/business');
+
+  const [design, services] = await Promise.all([
+    readBookingPageTheme(user.id),
+    readBookingPreviewCatalog(user.id),
+  ]);
+  if (!design) throw new Error('Booking page design is unavailable for this salon.');
+
+  return (
+    <WorkspacePage
+      title="Booking page design"
+      businessName={business.businessName}
+      description="Choose the colors and type your clients will see when they book."
+      backHref="/settings"
+      backLabel="Booking & notifications"
+      action={<Link className="aw-secondary" href="/booking-preview">Open booking preview</Link>}
+      wide
+    >
+      <BookingThemeEditor design={design} salonName={business.businessName}
+        professionalName={business.professionalName} services={services}/>
+    </WorkspacePage>
+  );
 }

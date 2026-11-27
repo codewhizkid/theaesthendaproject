@@ -1,88 +1,107 @@
 import type {CSSProperties} from 'react';
-export type BookingTheme = {
-  background: string;
-  schedulerBackground: string;
-  headerText: string;
-  schedulerText: string;
-  accentColor: string;
-  fontFamily: 'sans' | 'serif';
-};
-export type BookingThemeState = { theme: BookingTheme; revision: number };
+
+export const BOOKING_COLOR_FIELDS = [
+  {key: 'background', label: 'Page background'},
+  {key: 'schedulerBackground', label: 'Booking cards'},
+  {key: 'headerText', label: 'Header text'},
+  {key: 'schedulerText', label: 'Booking text'},
+  {key: 'accentColor', label: 'Buttons and accents'},
+] as const;
+
+type ColorKey = (typeof BOOKING_COLOR_FIELDS)[number]['key'];
+export type BookingTheme = Record<ColorKey, string> & {fontFamily: 'sans' | 'serif'};
+export type BookingThemeState = {theme: BookingTheme; revision: number};
+
 export const DEFAULT_BOOKING_THEME: BookingTheme = {
-  "background": "#F7F3ED",
-  "schedulerBackground": "#FFFFFF",
-  "headerText": "#382B3C",
-  "schedulerText": "#514B52",
-  "accentColor": "#78617E",
-  "fontFamily": "sans"
+  background: '#FAF8F6',
+  schedulerBackground: '#FFFFFF',
+  headerText: '#3F3142',
+  schedulerText: '#3F3142',
+  accentColor: '#705C76',
+  fontFamily: 'sans',
 };
-export const BOOKING_THEME_PRESETS: {name:string;theme:BookingTheme}[] = [
-  {
-    "name": "Studio neutral",
-    "theme": {
-      "background": "#F7F3ED",
-      "schedulerBackground": "#FFFFFF",
-      "headerText": "#382B3C",
-      "schedulerText": "#514B52",
-      "accentColor": "#78617E",
-      "fontFamily": "sans"
-    }
-  },
-  {
-    "name": "Olive & oat",
-    "theme": {
-      "background": "#F3F1E9",
-      "schedulerBackground": "#FEFDF9",
-      "headerText": "#403F32",
-      "schedulerText": "#575447",
-      "accentColor": "#77724C",
-      "fontFamily": "sans"
-    }
-  },
-  {
-    "name": "Soft blush",
-    "theme": {
-      "background": "#FBF3F1",
-      "schedulerBackground": "#FFFCFB",
-      "headerText": "#48383C",
-      "schedulerText": "#5D4D51",
-      "accentColor": "#B66F7C",
-      "fontFamily": "serif"
-    }
-  },
-  {
-    "name": "Color pop",
-    "theme": {
-      "background": "#F5F1F8",
-      "schedulerBackground": "#FFFFFF",
-      "headerText": "#302642",
-      "schedulerText": "#4F475C",
-      "accentColor": "#7651D6",
-      "fontFamily": "sans"
-    }
-  }
+
+export const BOOKING_THEME_PRESETS: {name: string; theme: BookingTheme}[] = [
+  {name: 'Studio neutral', theme: DEFAULT_BOOKING_THEME},
+  {name: 'Olive & oat', theme: {
+    background: '#EEEAE0', schedulerBackground: '#FFFCF5', headerText: '#302D22',
+    schedulerText: '#403C30', accentColor: '#6B6346', fontFamily: 'sans',
+  }},
+  {name: 'Soft blush', theme: {
+    background: '#F8EFEB', schedulerBackground: '#FFFCFA', headerText: '#48383C',
+    schedulerText: '#534549', accentColor: '#E7A4AE', fontFamily: 'serif',
+  }},
+  {name: 'Color pop', theme: {
+    background: '#F5F1F8', schedulerBackground: '#FFFFFF', headerText: '#302642',
+    schedulerText: '#4F475C', accentColor: '#6940D5', fontFamily: 'sans',
+  }},
 ];
-const COLOR_KEYS = ['background','schedulerBackground','headerText','schedulerText','accentColor'] as const;
-export function parseBookingTheme(value: unknown): BookingTheme {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Choose a supported color theme.');
-  const source = value as Record<string, unknown>;
-  const theme = {} as BookingTheme;
-  for (const key of COLOR_KEYS) {
-    const color = source[key];
-    if (typeof color !== 'string' || !/^#[0-9a-f]{6}$/i.test(color)) throw new Error('Choose a valid six-digit hex color for each setting.');
-    theme[key] = color.toUpperCase();
+
+export function normalizeHex(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const hex = value.trim().toUpperCase();
+  return /^#[0-9A-F]{6}$/.test(hex) ? hex : null;
+}
+
+function luminance(hex: string) {
+  const [r, g, b] = [1, 3, 5].map(start => {
+    const channel = parseInt(hex.slice(start, start + 2), 16) / 255;
+    return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+function contrast(a: string, b: string) {
+  const first = luminance(a);
+  const second = luminance(b);
+  return (Math.max(first, second) + 0.05) / (Math.min(first, second) + 0.05);
+}
+
+export function bookingThemeContrastIssue(theme: BookingTheme) {
+  if (contrast(theme.headerText, theme.background) < 4.5) {
+    return 'Choose a header text color with more contrast against the page background.';
   }
-  if (source.fontFamily !== 'sans' && source.fontFamily !== 'serif') throw new Error('Choose a supported font.');
-  theme.fontFamily = source.fontFamily;
+  if (contrast(theme.schedulerText, theme.background) < 4.5 ||
+      contrast(theme.schedulerText, theme.schedulerBackground) < 4.5) {
+    return 'Choose a booking text color that is readable on both the page and the cards.';
+  }
+  return null;
+}
+
+export function parseBookingTheme(value: unknown): BookingTheme {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('Choose a valid booking page design.');
+  }
+  const source = value as Record<string, unknown>;
+  const {fontFamily} = source;
+  if (fontFamily !== 'sans' && fontFamily !== 'serif') throw new Error('Choose a supported font.');
+  const theme: BookingTheme = {...DEFAULT_BOOKING_THEME, fontFamily};
+  for (const {key, label} of BOOKING_COLOR_FIELDS) {
+    const color = normalizeHex(source[key]);
+    if (!color) throw new Error(`Enter a six digit hex color for ${label.toLowerCase()}.`);
+    theme[key] = color;
+  }
+  const issue = bookingThemeContrastIssue(theme);
+  if (issue) throw new Error(issue);
   return theme;
 }
+
 export function bookingThemeCssVariables(theme: BookingTheme): CSSProperties {
+  const buttonText = contrast(theme.accentColor, '#000000') >= contrast(theme.accentColor, '#FFFFFF')
+    ? '#000000'
+    : '#FFFFFF';
+  const accentText = Math.min(contrast(theme.accentColor, theme.background),
+    contrast(theme.accentColor, theme.schedulerBackground)) >= 4.5 ? theme.accentColor : theme.schedulerText;
   return {
-    '--bp-background': theme.background,
-    '--bp-scheduler-background': theme.schedulerBackground,
-    '--bp-header-text': theme.headerText,
-    '--bp-scheduler-text': theme.schedulerText,
-    '--bp-accent-color': theme.accentColor,
-    '--bp-font-family': theme.fontFamily === 'serif' ? 'Georgia, "Times New Roman", serif' : 'var(--font-geist-sans), Arial, sans-serif',
-  } as unknown as CSSProperties;
+    '--booking-page-bg': theme.background,
+    '--booking-card-bg': theme.schedulerBackground,
+    '--booking-header-ink': theme.headerText,
+    '--booking-ink': theme.schedulerText,
+    '--booking-accent': theme.accentColor,
+    '--booking-accent-ink': accentText,
+    '--booking-button-ink': buttonText,
+    '--booking-font': theme.fontFamily === 'serif'
+      ? 'Georgia, "Times New Roman", serif'
+      : 'var(--font-geist-sans), Arial, sans-serif',
+  } as CSSProperties & Record<`--${string}`, string>;
 }

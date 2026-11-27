@@ -1,41 +1,130 @@
 'use client';
-import {useActionState,useState} from 'react';
-import {bookingThemeCssVariables,BOOKING_THEME_PRESETS,type BookingTheme} from '@/lib/booking-theme/input';
+
+import {useActionState, useState} from 'react';
+import type {BookingPreviewService} from '@/lib/appointments/booking-preview-catalog';
+import {
+  BOOKING_COLOR_FIELDS, BOOKING_THEME_PRESETS,
+  bookingThemeContrastIssue, bookingThemeCssVariables, normalizeHex,
+  type BookingThemeState,
+} from '@/lib/booking-theme/input';
 import {saveBookingPageDesign} from '@/app/settings/booking-page/actions';
-const colorFields:{key:Exclude<keyof BookingTheme,'fontFamily'>;label:string}[]=[
- {key:'background',label:'Background'},
- {key:'schedulerBackground',label:'Scheduler background'},
- {key:'headerText',label:'Header text'},
- {key:'schedulerText',label:'Scheduler text'},
- {key:'accentColor',label:'Button / accent color'},
-];
-function luminance(hex:string){
- const rgb=[1,3,5].map(start=>parseInt(hex.slice(start,start+2),16)/255).map(value=>value<=0.04045?value/12.92:((value+0.055)/1.055)**2);
- return 0.2126*rgb[0]+0.7152*rgb[1]+0.0722*rgb[2];
-}
-function contrastRatio(a:string,b:string){const values=[luminance(a),luminance(b)].sort((x,y)=>y-x);return (values[0]+0.05)/(values[1]+0.05);}
-export function BookingThemeEditor({theme:initialTheme,revision,businessName}:{theme:BookingTheme;revision:number;businessName:string}){
- const [state,action,pending]=useActionState(saveBookingPageDesign,{message:''});
- const [theme,setTheme]=useState(initialTheme);
- const headerContrast=contrastRatio(theme.headerText,theme.background);
- const schedulerContrast=contrastRatio(theme.schedulerText,theme.schedulerBackground);
- const hasLowContrast=headerContrast<4.5||schedulerContrast<4.5;
- const previewStyle=bookingThemeCssVariables(theme);
- return <form action={action} className="bte-form">
-  <input type="hidden" name="revision" value={revision}/>
-  <input type="hidden" name="theme" value={JSON.stringify(theme)} readOnly/>
-  <div className="bte-layout">
-   <section className="aw-panel"><div className="aw-panel-body bte-controls">
-    <section aria-labelledby="bte-palette-title"><h2 id="bte-palette-title">Start with a palette</h2><p>Choose a starting point, then fine-tune every color.</p><div className="bte-presets">{BOOKING_THEME_PRESETS.map(preset=><button className="aw-secondary" type="button" key={preset.name} onClick={()=>setTheme(preset.theme)}>{preset.name}</button>)}</div></section>
-    <fieldset disabled={pending} className="bte-color-fields"><legend>Colors</legend>{colorFields.map(field=><label key={field.key}><span>{field.label}<code>{theme[field.key]}</code></span><input type="color" name={field.key} value={theme[field.key]} onChange={event=>setTheme(current=>({...current,[field.key]:event.target.value.toUpperCase()}))}/></label>)}</fieldset>
-    <label className="bte-font">Font<select value={theme.fontFamily} onChange={event=>setTheme(current=>({...current,fontFamily:event.target.value as BookingTheme['fontFamily']}))}><option value="sans">Aesthenda Sans</option><option value="serif">Editorial Serif</option></select></label>
-    <p className="bte-contrast" role="status">{hasLowContrast?'Some text may be difficult to read. Try a darker text color or a lighter background.':`Text contrast looks clear (header ${headerContrast.toFixed(1)}:1, scheduler ${schedulerContrast.toFixed(1)}:1).`}</p>
-    <div className="bte-actions"><button className="aw-secondary" type="button" onClick={()=>setTheme(BOOKING_THEME_PRESETS[0].theme)}>Reset preview</button><button className="aw-primary" type="submit" disabled={pending}>{pending?'Saving…':'Save design'}</button></div><p role="status" aria-live="polite">{state.message}</p>
-   </div></section>
-   <section className="bte-preview-panel" aria-label="Live booking page preview"><div className="bte-preview-heading"><h2>Live preview</h2><p>Changes appear here before you save.</p></div><div className="bp-page bte-preview" style={previewStyle}>
-    <header className="bp-header"><div><p className="bp-salon">{businessName||'Your studio'}</p><span className="bp-powered">BOOKING WITH AESTHENDA</span></div><span className="bp-header-label">Book your next visit</span></header>
-    <main className="bp-main"><p className="bp-eyebrow">Make time for you</p><h1>Find a moment that feels like yours.</h1><p className="bp-intro">Choose a service and a time that work for you.</p><div className="bp-layout"><div className="bp-services"><article className="bp-service"><div><span className="bp-service-category">Hair</span><h2>Signature haircut</h2><p>A tailored cut and finish, shaped around you.</p><span className="bp-duration">45 minutes</span></div><strong>$75</strong></article><button type="button" className="bp-primary">Choose a time</button></div><aside className="bp-summary"><h2>Your visit</h2><p className="bp-professional">A little care, just for you.</p><div className="bp-summary-detail"><span>Your service</span><p>Choose a service to begin.</p></div><p className="bp-preview-explanation">Your appointment details will appear here.</p></aside></div></main>
-   </div></section>
-  </div>
- </form>;
+import {BookingPreview} from './booking-preview';
+import {BookingPageHeader} from './booking-page-header';
+import '@/app/booking-preview/booking-preview.css';
+import './booking-theme.css';
+import styles from './booking-theme-editor.module.css';
+
+type Props = {
+  design: BookingThemeState;
+  salonName: string;
+  professionalName: string;
+  services: BookingPreviewService[];
+};
+
+export function BookingThemeEditor({design, salonName, professionalName, services}: Props) {
+  const [draft, setDraft] = useState(design.theme);
+  const [viewport, setViewport] = useState<'desktop' | 'phone'>('desktop');
+  const [result, save, pending] = useActionState(saveBookingPageDesign, {message: ''});
+
+  const preview = {...draft};
+  let invalidHex = false;
+  for (const {key} of BOOKING_COLOR_FIELDS) {
+    const color = normalizeHex(draft[key]);
+    preview[key] = color ?? design.theme[key];
+    if (!color) invalidHex = true;
+  }
+  const issue = invalidHex ? 'Enter a hex color like #705C76 for each field.' : bookingThemeContrastIssue(preview);
+  const changed = invalidHex || draft.fontFamily !== design.theme.fontFamily ||
+    BOOKING_COLOR_FIELDS.some(({key}) => preview[key] !== design.theme[key]);
+  const applyTheme = changed || design.revision > 0;
+
+  return (
+    <div className={styles.editor}>
+      <form action={save} className="aw-panel">
+        <input type="hidden" name="revision" value={design.revision}/>
+        <fieldset disabled={pending} className={`aw-panel-body ${styles.controls}`}>
+          <legend className="sr-only">Booking page appearance</legend>
+          <section aria-labelledby="booking-palettes">
+            <h2 id="booking-palettes">Palettes</h2>
+            <div className={styles.palettes}>
+              {BOOKING_THEME_PRESETS.map(({name, theme}) => {
+                const selected = !invalidHex && theme.fontFamily === draft.fontFamily &&
+                  BOOKING_COLOR_FIELDS.every(({key}) => preview[key] === theme[key]);
+                return (
+                  <button key={name} type="button" aria-pressed={selected} onClick={() => setDraft(theme)}>
+                    <span className={styles.swatches} aria-hidden="true">
+                      {(['background', 'schedulerBackground', 'headerText', 'accentColor'] as const).map(key => (
+                        <span key={key} style={{backgroundColor: theme[key]}}/>
+                      ))}
+                    </span>
+                    {name}
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+          <section aria-labelledby="booking-colors">
+            <h2 id="booking-colors">Colors</h2>
+            <div className={styles.colors}>
+              {BOOKING_COLOR_FIELDS.map(({key, label}) => (
+                <div className={styles.colorRow} key={key}>
+                  <label htmlFor={`booking-color-${key}`}>{label}</label>
+                  <div className={styles.colorControls}>
+                    <input type="color" aria-label={`Pick ${label.toLowerCase()} color`}
+                      value={preview[key].toLowerCase()}
+                      onChange={event => setDraft({...draft, [key]: event.target.value.toUpperCase()})}/>
+                    <input id={`booking-color-${key}`} name={key} type="text" value={draft[key]}
+                      maxLength={7} spellCheck={false} autoComplete="off" autoCapitalize="characters"
+                      aria-invalid={!normalizeHex(draft[key])}
+                      onChange={event => setDraft({...draft, [key]: event.target.value})}/>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className={styles.note}>Button labels switch between black and white for readability.</p>
+          </section>
+          <label className={styles.font}>Font
+            <select name="fontFamily" value={draft.fontFamily}
+              onChange={event => setDraft({...draft, fontFamily: event.target.value === 'serif' ? 'serif' : 'sans'})}>
+              <option value="sans">Aesthenda Sans</option>
+              <option value="serif">Editorial Serif</option>
+            </select>
+          </label>
+          {issue && <p className={styles.issue} role="status">{issue}</p>}
+          <div className={styles.actions}>
+            <button className="aw-secondary" type="button" disabled={!changed}
+              onClick={() => setDraft(design.theme)}>Undo edits</button>
+            <button className="aw-primary" type="submit" disabled={!!issue || !changed}>
+              {pending ? 'Saving…' : 'Save design'}
+            </button>
+          </div>
+          <p className={result.failed ? styles.issue : styles.note} role="status" hidden={!result.message}>
+            {result.message}
+          </p>
+        </fieldset>
+      </form>
+      <section className={styles.preview} aria-labelledby="design-preview-heading">
+        <header className={styles.previewHeader}>
+          <div>
+            <h2 id="design-preview-heading">Live preview</h2>
+            <p className={styles.note}>Private preview with your salon’s services.</p>
+          </div>
+          <div className={styles.viewOptions} role="group" aria-label="Preview width">
+            <button type="button" aria-pressed={viewport === 'desktop'} onClick={() => setViewport('desktop')}>Desktop</button>
+            <button type="button" aria-pressed={viewport === 'phone'} onClick={() => setViewport('phone')}>Phone</button>
+          </div>
+        </header>
+        <div className={styles.previewFrame} data-viewport={viewport}>
+          <div className={`bp-page ${styles.previewPage}${applyTheme ? ' bp-themed' : ''}`}
+            style={applyTheme ? bookingThemeCssVariables(preview) : undefined}>
+            <BookingPageHeader salonName={salonName}/>
+            <div className="bp-main">
+              <BookingPreview salonName={salonName} professionalName={professionalName}
+                services={services} initialDate="" timezone={null} appearanceOnly/>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
 }

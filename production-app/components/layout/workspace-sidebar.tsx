@@ -11,7 +11,7 @@ const pages:{href:string;label:string;icon:IconName}[]=[
  {href:'/clients',label:'Clients',icon:'clients'},
  {href:'/services',label:'Services',icon:'services'},
  {href:'/availability',label:'Availability',icon:'clock'},
- {href:'/settings/booking-page',label:'Booking page design',icon:'link'},
+ {href:'/booking-preview',label:'Booking Page',icon:'link'},
  {href:'/settings',label:'Booking & notifications',icon:'settings'},
 ];
 const upcoming:{label:string;icon:IconName}[]=[{label:'Payments',icon:'payment'},{label:'Communications',icon:'mail'},{label:'Analytics',icon:'chart'}];
