@@ -1,3 +1,4 @@
+import type {CSSProperties} from 'react';
 export type BookingTheme = {
   background: string;
   schedulerBackground: string;
@@ -75,7 +76,7 @@ export function parseBookingTheme(value: unknown): BookingTheme {
   theme.fontFamily = source.fontFamily;
   return theme;
 }
-export function bookingThemeCssVariables(theme: BookingTheme): Record<string, string> {
+export function bookingThemeCssVariables(theme: BookingTheme): CSSProperties {
   return {
     '--bp-background': theme.background,
     '--bp-scheduler-background': theme.schedulerBackground,
@@ -83,5 +84,5 @@ export function bookingThemeCssVariables(theme: BookingTheme): Record<string, st
     '--bp-scheduler-text': theme.schedulerText,
     '--bp-accent-color': theme.accentColor,
     '--bp-font-family': theme.fontFamily === 'serif' ? 'Georgia, "Times New Roman", serif' : 'var(--font-geist-sans), Arial, sans-serif',
-  };
+  } as unknown as CSSProperties;
 }

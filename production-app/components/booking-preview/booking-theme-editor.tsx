@@ -1,6 +1,5 @@
 'use client';
 import {useActionState,useState} from 'react';
-import type {CSSProperties} from 'react';
 import {bookingThemeCssVariables,BOOKING_THEME_PRESETS,type BookingTheme} from '@/lib/booking-theme/input';
 import {saveBookingPageDesign} from '@/app/settings/booking-page/actions';
 const colorFields:{key:Exclude<keyof BookingTheme,'fontFamily'>;label:string}[]=[
@@ -21,7 +20,7 @@ export function BookingThemeEditor({theme:initialTheme,revision,businessName}:{t
  const headerContrast=contrastRatio(theme.headerText,theme.background);
  const schedulerContrast=contrastRatio(theme.schedulerText,theme.schedulerBackground);
  const hasLowContrast=headerContrast<4.5||schedulerContrast<4.5;
- const previewStyle=bookingThemeCssVariables(theme) as CSSProperties;
+ const previewStyle=bookingThemeCssVariables(theme);
  return <form action={action} className="bte-form">
   <input type="hidden" name="revision" value={revision}/>
   <input type="hidden" name="theme" value={JSON.stringify(theme)} readOnly/>
