@@ -10,7 +10,7 @@ export const BOOKING_COLOR_FIELDS = [
 
 type ColorKey = (typeof BOOKING_COLOR_FIELDS)[number]['key'];
 export type BookingTheme = Record<ColorKey, string> & {fontFamily: 'sans' | 'serif'};
-export type BookingThemeState = {theme: BookingTheme; revision: number};
+export type BookingThemeState = {theme: BookingTheme; revision: number; workspaceMatchesBooking: boolean};
 
 export const DEFAULT_BOOKING_THEME: BookingTheme = {
   background: '#FAF8F6',
@@ -86,12 +86,21 @@ export function parseBookingTheme(value: unknown): BookingTheme {
   return theme;
 }
 
-export function bookingThemeCssVariables(theme: BookingTheme): CSSProperties {
-  const buttonText = contrast(theme.accentColor, '#000000') >= contrast(theme.accentColor, '#FFFFFF')
+export function contrastingForeground(background: string) {
+  return contrast(background, '#000000') >= contrast(background, '#FFFFFF')
     ? '#000000'
     : '#FFFFFF';
+}
+
+export function themeAccentColors(theme: BookingTheme) {
+  const buttonText = contrastingForeground(theme.accentColor);
   const accentText = Math.min(contrast(theme.accentColor, theme.background),
     contrast(theme.accentColor, theme.schedulerBackground)) >= 4.5 ? theme.accentColor : theme.schedulerText;
+  return {accentText, buttonText};
+}
+
+export function bookingThemeCssVariables(theme: BookingTheme): CSSProperties {
+  const {accentText, buttonText} = themeAccentColors(theme);
   return {
     '--booking-page-bg': theme.background,
     '--booking-card-bg': theme.schedulerBackground,

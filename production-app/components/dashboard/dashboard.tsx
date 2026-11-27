@@ -4,15 +4,19 @@ import {dashboardOverview} from '@/lib/dashboard/overview';
 import {WorkspaceSidebar} from '@/components/layout/workspace-sidebar';
 import {DashboardIcon} from '@/components/layout/workspace-icons';
 import {RefreshDashboard} from './refresh-dashboard';
+import type {BookingThemeState} from '@/lib/booking-theme/input';
+import {workspaceAppearance} from '@/lib/booking-theme/workspace';
 import './dashboard.css';
+import '@/components/layout/workspace-appearance.css';
 const statusLabels:Record<string,string>={pending:'Needs confirmation',confirmed:'Confirmed',completed:'Completed',no_show:'No-show'};
-export function Dashboard({name,businessName,schedule}:{name?:string;businessName?:string;schedule:DaySchedule}){
+export function Dashboard({name,businessName,schedule,design=null}:{name?:string;businessName?:string;schedule:DaySchedule;design?:BookingThemeState|null}){
+ const appearance = workspaceAppearance(design);
  const {visits,remaining,pending,completed,serviceValue,next,inProgress}=dashboardOverview(schedule);
  const firstName=name?.trim().split(/\s+/)[0];
  const date=new Intl.DateTimeFormat('en-US',{weekday:'long',month:'long',day:'numeric',timeZone:'UTC'}).format(new Date(schedule.date+'T12:00:00Z'));
  const calendar=`/calendar?view=day&date=${schedule.date}`,book=`/appointments?date=${schedule.date}`;
  const updated=schedule.timezone?new Intl.DateTimeFormat('en-US',{hour:'numeric',minute:'2-digit',timeZone:schedule.timezone}).format(new Date(schedule.asOf)):null;
- return <div className="ae-dashboard">
+ return <div className={`ae-dashboard${appearance.className}`} style={appearance.style}>
  <a className="ae-skip-link" href="#today-content">Skip to today</a>
  <WorkspaceSidebar businessName={businessName} professionalName={name}/>
  <main id="today-content" className="ae-main" tabIndex={-1}>
