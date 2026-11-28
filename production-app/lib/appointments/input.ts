@@ -1,3 +1,4 @@
+/opt/homebrew/Library/Homebrew/cmd/shellenv.sh: line 18: /bin/ps: Operation not permitted
 export const uuid=(s:string)=>/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
 export function validDate(s:string){return /^\d{4}-\d{2}-\d{2}$/.test(s)&&s>='2000-01-01'&&s<='2100-12-31'&&!Number.isNaN(Date.parse(s))&&new Date(s+'T00:00:00Z').toISOString().slice(0,10)===s;}
 export type AppointmentInput={requestKey:string;clientId:string;serviceId:string;startAt:string;serviceToken:string};
@@ -22,4 +23,12 @@ export function parseReschedule(form:FormData):RescheduleInput{
  if(form.get('actionVersion')!=='1'||![requestKey,appointmentId].every(uuid)||!/^\d+$/.test(rawRevision)||!Number.isSafeInteger(Number(rawRevision))||Number(rawRevision)<1||Number(rawRevision)>2147483646||!/^[0-9a-f]{32}$/.test(moveToken))throw new Error('Refresh this appointment and choose an available time again.');
  if(!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00(?:\.000)?(?:Z|[+-]\d{2}:\d{2})$/.test(startAt)||!Number.isFinite(Date.parse(startAt)))throw new Error('Choose an available start time.');
  return {requestKey,appointmentId,revision:Number(rawRevision),startAt:new Date(startAt).toISOString(),moveToken};
+}
+export type ServiceChangeInput={requestKey:string;appointmentId:string;revision:number;serviceId:string;startAt:string;changeToken:string};
+export function parseServiceChange(form:FormData):ServiceChangeInput{
+ const text=(name:string)=>String(form.get(name)??'');
+ const requestKey=text('requestKey'),appointmentId=text('appointmentId'),serviceId=text('serviceId'),rawRevision=text('revision'),startAt=text('startAt'),changeToken=text('changeToken');
+ if(form.get('actionVersion')!=='1'||![requestKey,appointmentId,serviceId].every(uuid)||!/^[0-9a-f]{32}$/.test(changeToken)||!/^\d+$/.test(rawRevision)||!Number.isSafeInteger(Number(rawRevision))||Number(rawRevision)<1||Number(rawRevision)>2147483646)throw new Error('Refresh the appointment and choose a service and available time again.');
+ if(!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00(?:\.000)?(?:Z|[+-]\d{2}:\d{2})$/.test(startAt)||!Number.isFinite(Date.parse(startAt)))throw new Error('Choose an available start time.');
+ return {requestKey,appointmentId,revision:Number(rawRevision),serviceId,startAt:new Date(startAt).toISOString(),changeToken};
 }
