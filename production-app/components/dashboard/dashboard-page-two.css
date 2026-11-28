@@ -16,22 +16,22 @@
   position: relative;
   border-radius: 14px;
   box-shadow:
-    0 8px 20px rgba(52, 48, 38, .14),
-    0 2px 5px rgba(52, 48, 38, .07),
+    0 14px 30px rgba(52, 48, 38, .22),
+    0 4px 9px rgba(52, 48, 38, .11),
     inset 0 1px 0 rgba(255, 255, 255, .95);
 }
 
 .ae-dashboard .ae-card {
   border-radius: 16px;
   box-shadow:
-    0 8px 22px rgba(52, 48, 38, .13),
-    0 2px 5px rgba(52, 48, 38, .07);
+    0 16px 36px rgba(52, 48, 38, .20),
+    0 4px 10px rgba(52, 48, 38, .10);
 }
 
 .ae-dashboard .ae-up-next {
   box-shadow:
-    0 10px 26px rgba(52, 48, 38, .15),
-    0 2px 6px rgba(52, 48, 38, .07),
+    0 18px 38px rgba(52, 48, 38, .23),
+    0 5px 12px rgba(52, 48, 38, .12),
     inset 0 1px 0 rgba(255, 255, 255, .95);
 }
 
@@ -173,10 +173,10 @@
 
 @media (max-width: 700px) {
   .ae-dashboard .ae-stat {
-    box-shadow: 0 5px 14px rgba(52, 48, 38, .12), 0 1px 3px rgba(52, 48, 38, .06);
+    box-shadow: 0 9px 22px rgba(52, 48, 38, .20), 0 2px 6px rgba(52, 48, 38, .09);
   }
 
   .ae-dashboard .ae-card {
-    box-shadow: 0 6px 18px rgba(52, 48, 38, .12), 0 1px 4px rgba(52, 48, 38, .06);
+    box-shadow: 0 11px 26px rgba(52, 48, 38, .18), 0 3px 8px rgba(52, 48, 38, .09);
   }
 }
