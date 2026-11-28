@@ -9,7 +9,14 @@ export const BOOKING_COLOR_FIELDS = [
 ] as const;
 
 type ColorKey = (typeof BOOKING_COLOR_FIELDS)[number]['key'];
-export type BookingTheme = Record<ColorKey, string> & {fontFamily: 'sans' | 'serif'};
+export const BOOKING_FONT_CHOICES = [
+  {value: 'sans', label: 'Aesthenda Sans'},
+  {value: 'manrope', label: 'Soft Modern Sans'},
+  {value: 'serif', label: 'Editorial Serif'},
+  {value: 'lora', label: 'Warm Editorial Serif'},
+] as const;
+export type BookingFont = (typeof BOOKING_FONT_CHOICES)[number]['value'];
+export type BookingTheme = Record<ColorKey, string> & {fontFamily: BookingFont};
 export type BookingThemeState = {theme: BookingTheme; revision: number; workspaceMatchesBooking: boolean};
 
 export const DEFAULT_BOOKING_THEME: BookingTheme = {
@@ -73,9 +80,9 @@ export function parseBookingTheme(value: unknown): BookingTheme {
     throw new Error('Choose a valid booking page design.');
   }
   const source = value as Record<string, unknown>;
-  const {fontFamily} = source;
-  if (fontFamily !== 'sans' && fontFamily !== 'serif') throw new Error('Choose a supported font.');
-  const theme: BookingTheme = {...DEFAULT_BOOKING_THEME, fontFamily};
+  const fontChoice = BOOKING_FONT_CHOICES.find(({value}) => value === source.fontFamily);
+  if (!fontChoice) throw new Error('Choose a supported font.');
+  const theme: BookingTheme = {...DEFAULT_BOOKING_THEME, fontFamily: fontChoice.value};
   for (const {key, label} of BOOKING_COLOR_FIELDS) {
     const color = normalizeHex(source[key]);
     if (!color) throw new Error(`Enter a six digit hex color for ${label.toLowerCase()}.`);
@@ -109,8 +116,11 @@ export function bookingThemeCssVariables(theme: BookingTheme): CSSProperties {
     '--booking-accent': theme.accentColor,
     '--booking-accent-ink': accentText,
     '--booking-button-ink': buttonText,
-    '--booking-font': theme.fontFamily === 'serif'
-      ? 'Georgia, "Times New Roman", serif'
-      : 'var(--font-geist-sans), Arial, sans-serif',
+    '--booking-font': {
+      sans: 'var(--font-geist-sans), Arial, sans-serif',
+      manrope: 'var(--font-manrope), var(--font-geist-sans), Arial, sans-serif',
+      serif: 'Georgia, "Times New Roman", serif',
+      lora: 'var(--font-lora), Georgia, "Times New Roman", serif',
+    }[theme.fontFamily],
   } as CSSProperties & Record<`--${string}`, string>;
 }
