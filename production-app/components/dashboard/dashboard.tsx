@@ -8,6 +8,7 @@ import type {BookingThemeState} from '@/lib/booking-theme/input';
 import {workspaceAppearance} from '@/lib/booking-theme/workspace';
 import './dashboard.css';
 import '@/components/layout/workspace-appearance.css';
+import './dashboard-page-two.css';
 const statusLabels:Record<string,string>={pending:'Needs confirmation',confirmed:'Confirmed',completed:'Completed',no_show:'No-show'};
 export function Dashboard({name,businessName,schedule,design=null}:{name?:string;businessName?:string;schedule:DaySchedule;design?:BookingThemeState|null}){
  const appearance = workspaceAppearance(design);
