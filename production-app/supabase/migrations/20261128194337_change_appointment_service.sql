@@ -1,4 +1,3 @@
-/opt/homebrew/Library/Homebrew/cmd/shellenv.sh: line 18: /bin/ps: Operation not permitted
 -- Let an owner replace the service on a future professional appointment.
 -- Availability is rechecked inside the same locked transaction as the update.
 do $$ begin execute format('grant aesthenda_appointments_owner to %I with set true',current_user);end $$;
