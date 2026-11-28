@@ -11,6 +11,7 @@ import {readBusinessSetup} from '@/lib/business/persistence';
 import {isClientSigninEnabled} from '@/lib/client-access/persistence';
 import {requireUser} from '@/lib/supabase/require-user';
 import {BookingPreview} from '@/components/booking-preview/booking-preview';
+import {WorkspacePage} from '@/components/layout/workspace-page';
 import {BookingPageHeader} from '@/components/booking-preview/booking-page-header';
 import {openClientSigninTest} from './client-access-actions';
 import './booking-preview.css';
@@ -35,27 +36,31 @@ export default async function BookingPreviewPage() {
   const theme = design && design.revision > 0 ? design.theme : null;
 
   return (
-    <div className={theme ? 'bp-page bp-themed' : 'bp-page'}
-      style={theme ? bookingThemeCssVariables(theme) : undefined}>
-      <div className="bp-preview-note">
-        <span>Salon preview · Only visible to you · <Link href="/settings/booking-page">Edit design</Link> ·{' '}
-          <Link href="/settings">Booking settings</Link></span>
-        <div className="ca-preview-actions">
-          <form action={openClientSigninTest}>
-            <button type="submit" disabled={!clientReady} title={clientReady ? '' : 'Waiting for the staging client-profile update'}>
-              {clientReady ? 'Test client sign-in ↗' : 'Client sign-in · Setup pending'}
-            </button>
-          </form>
-          <Link href="/dashboard">Back to your workspace ↗</Link>
-        </div>
+    <WorkspacePage
+      title="Booking page preview"
+      businessName={business.businessName}
+      description="Only you can see this preview. Use it to try the booking flow your clients will see."
+      action={<Link className="aw-primary" href="/settings/booking-page">Edit design</Link>}
+      wide
+    >
+      <div className="mb-5 flex flex-wrap items-center gap-3">
+        <Link className="aw-secondary" href="/settings">Booking &amp; notifications</Link>
+        <form action={openClientSigninTest}>
+          <button className="aw-secondary" type="submit" disabled={!clientReady}>
+            {clientReady ? 'Test client sign-in' : 'Client sign-in setup pending'}
+          </button>
+        </form>
       </div>
-      <BookingPageHeader salonName={business.businessName}/>
-      <main id="booking-content" className="bp-main">
-        <BookingPreview key={`visibility-${visibility.revision}`} salonName={business.businessName}
-          professionalName={business.professionalName} services={catalog} initialDate={schedule.date}
-          timezone={schedule.timezone} confirmationRequired={preferences.requireClientConfirmation}/>
-      </main>
-      <footer className="bp-footer">{business.businessName}<span>Booking powered by aesthenda</span></footer>
-    </div>
+      <div className={theme ? 'bp-page bp-themed' : 'bp-page'}
+        style={theme ? bookingThemeCssVariables(theme) : undefined}>
+        <BookingPageHeader salonName={business.businessName}/>
+        <div id="booking-content" className="bp-main">
+          <BookingPreview key={`visibility-${visibility.revision}`} salonName={business.businessName}
+            professionalName={business.professionalName} services={catalog} initialDate={schedule.date}
+            timezone={schedule.timezone} confirmationRequired={preferences.requireClientConfirmation}/>
+        </div>
+        <footer className="bp-footer">{business.businessName}<span>Booking powered by aesthenda</span></footer>
+      </div>
+    </WorkspacePage>
   );
 }

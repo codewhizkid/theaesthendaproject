@@ -5,7 +5,6 @@ import {readBusinessSetup} from '@/lib/business/persistence';
 import {readBookingPageTheme} from '@/lib/booking-theme/persistence';
 import {readBookingPreviewCatalog} from '@/lib/appointments/booking-preview-catalog';
 import {BookingThemeEditor} from '@/components/booking-preview/booking-theme-editor';
-import {WorkspaceMatchToggle} from '@/components/booking-preview/workspace-match-toggle';
 import {WorkspacePage} from '@/components/layout/workspace-page';
 
 export const dynamic = 'force-dynamic';
@@ -26,12 +25,9 @@ export default async function BookingPageDesignPage() {
       title="Booking page design"
       businessName={business.businessName}
       description="Choose the colors and type your clients will see when they book."
-      backHref="/settings"
-      backLabel="Booking & notifications"
-      action={<Link className="aw-secondary" href="/booking-preview">Open booking preview</Link>}
+      action={<Link className="aw-secondary" href="/booking-preview">Preview booking page</Link>}
       wide
     >
-      <WorkspaceMatchToggle matches={design.workspaceMatchesBooking}/>
       <BookingThemeEditor design={design} salonName={business.businessName}
         professionalName={business.professionalName} services={services}/>
     </WorkspacePage>
