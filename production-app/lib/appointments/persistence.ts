@@ -1,6 +1,7 @@
+/opt/homebrew/Library/Homebrew/cmd/shellenv.sh: line 18: /bin/ps: Operation not permitted
 import 'server-only';
 import {checkedRuntime} from '@/lib/business/persistence';
-import type {AppointmentInput,DaySchedule,SlotResult} from './input';
+import type {AppointmentInput,DaySchedule,ServiceChangeInput,SlotResult} from './input';
 export async function readAppointments(actor:string,date:string|null=null,id:string|null=null):Promise<DaySchedule>{
  const db=await checkedRuntime();try{return (await db.query('select aesthenda_private.read_appointments_v1($1::uuid,$2::date,$3::uuid) as result',[actor,date,id])).rows[0].result;}finally{db.release();}
 }
@@ -16,6 +17,13 @@ export async function readRescheduleSlots(actor:string,id:string,date:string):Pr
 }
 export async function rescheduleAppointmentRecord(actor:string,input:import('./input').RescheduleInput):Promise<string>{
  const db=await checkedRuntime();try{return (await db.query('select aesthenda_private.reschedule_appointment_v1($1::uuid,$2::uuid,$3::uuid,$4::integer,$5::timestamptz,$6::text) as result',[actor,input.requestKey,input.appointmentId,input.revision,input.startAt,input.moveToken])).rows[0].result;}finally{db.release();}
+}
+export type ServiceChangeSlots=SlotResult&{revision:number;changeToken:string};
+export async function readServiceChangeSlots(actor:string,id:string,service:string,date:string):Promise<ServiceChangeSlots>{
+ const db=await checkedRuntime();try{return (await db.query('select aesthenda_private.service_change_slots_v1($1::uuid,$2::uuid,$3::uuid,$4::date) as result',[actor,id,service,date])).rows[0].result;}finally{db.release();}
+}
+export async function changeAppointmentServiceRecord(actor:string,input:ServiceChangeInput):Promise<string>{
+ const db=await checkedRuntime();try{return (await db.query('select aesthenda_private.change_appointment_service_v1($1::uuid,$2::uuid,$3::uuid,$4::integer,$5::uuid,$6::timestamptz,$7::text) as result',[actor,input.requestKey,input.appointmentId,input.revision,input.serviceId,input.startAt,input.changeToken])).rows[0].result;}finally{db.release();}
 }
 export async function readCalendar(actor:string,dates:string[]):Promise<{processingEnabled:boolean;days:(DaySchedule&{hours:import('@/lib/calendar/availability').CalendarHours;blocks:import('@/lib/blocks/input').CalendarBlock[]})[];undo:{id:string;label:string}|null}>{
  const db=await checkedRuntime();
