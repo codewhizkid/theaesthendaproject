@@ -3,9 +3,9 @@
 import {useActionState, useState} from 'react';
 import type {BookingPreviewService} from '@/lib/appointments/booking-preview-catalog';
 import {
-  BOOKING_COLOR_FIELDS, BOOKING_THEME_PRESETS,
+  BOOKING_COLOR_FIELDS, BOOKING_THEME_PRESETS, BOOKING_FONT_CHOICES,
   bookingThemeContrastIssue, bookingThemeCssVariables, normalizeHex,
-  type BookingThemeState,
+  type BookingFont, type BookingThemeState,
 } from '@/lib/booking-theme/input';
 import {saveBookingPageDesign} from '@/app/settings/booking-page/actions';
 import {WorkspaceMatchToggle} from './workspace-match-toggle';
@@ -87,9 +87,10 @@ export function BookingThemeEditor({design, salonName, professionalName, service
             </section>
             <label className={styles.font}>Font
               <select name="fontFamily" value={draft.fontFamily}
-                onChange={event => setDraft({...draft, fontFamily: event.target.value === 'serif' ? 'serif' : 'sans'})}>
-                <option value="sans">Aesthenda Sans</option>
-                <option value="serif">Editorial Serif</option>
+                onChange={event => setDraft({...draft, fontFamily: event.target.value as BookingFont})}>
+                {BOOKING_FONT_CHOICES.map(({value, label}) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
               </select>
             </label>
             {issue && <p className={styles.issue} role="status">{issue}</p>}
