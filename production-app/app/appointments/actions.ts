@@ -1,11 +1,12 @@
+/opt/homebrew/Library/Homebrew/cmd/shellenv.sh: line 18: /bin/ps: Operation not permitted
 'use server';
 import {dispatchOwnerBookingConfirmation} from '@/lib/appointments/confirmation';
 import {calendarHref,calendarActionContext} from '@/lib/calendar/navigation';
 import {revalidatePath} from 'next/cache';
 import {redirect} from 'next/navigation';
 import {requireUser} from '@/lib/supabase/require-user';
-import {parseAppointment,parseReschedule,uuid} from '@/lib/appointments/input';
-import {createAppointment,cancelAppointmentRecord,rescheduleAppointmentRecord,setAppointmentStatus} from '@/lib/appointments/persistence';
+import {parseAppointment,parseReschedule,parseServiceChange,uuid} from '@/lib/appointments/input';
+import {createAppointment,cancelAppointmentRecord,rescheduleAppointmentRecord,changeAppointmentServiceRecord,setAppointmentStatus} from '@/lib/appointments/persistence';
 export async function bookAppointment(_previous:{message:string},form:FormData){
  const user=await requireUser();let input;
  try{input=parseAppointment(form);}catch(error){return {message:error instanceof Error?error.message:'Choose the appointment details again.'};}
@@ -36,6 +37,20 @@ export async function rescheduleAppointment(_previous:{message:string},form:Form
  return {message:'The appointment could not be moved. Your original appointment is unchanged. Reload its details and try again.'};
  }
  revalidatePath('/appointments');revalidatePath('/calendar');revalidatePath('/dashboard');revalidatePath(`/appointments/${id}`);const calendar=calendarActionContext(form);redirect(calendar?calendarHref(calendar,'appointment',{id,rescheduled:'1'}):`/appointments/${id}?rescheduled=1`);
+}
+
+export async function changeAppointmentService(_previous:{message:string},form:FormData){
+ const user=await requireUser();let input;
+ try{input=parseServiceChange(form);}catch(error){return {message:error instanceof Error?error.message:'Refresh the appointment and choose an available time.'};}
+ let id;
+ try{id=await changeAppointmentServiceRecord(user.id,input);}catch(error){
+  const message=error instanceof Error?error.message:'';
+  if(message.includes('SLOT_UNAVAILABLE'))return {message:'That time is no longer available. Your appointment is unchanged. Refresh the available times.'};
+  if(message.includes('STALE_APPOINTMENT')||message.includes('SERVICE_CHANGED'))return {message:'The appointment or service changed in another tab. Reload its current details before saving.'};
+  if(message.includes('NO_SERVICE_CHANGE'))return {message:'Choose a different service. Use Reschedule appointment to keep the current service.'};
+  return {message:'The service could not be changed. Your original appointment is unchanged. Reload its details and try again.'};
+ }
+ revalidatePath('/appointments');revalidatePath('/calendar');revalidatePath('/dashboard');revalidatePath(`/appointments/${id}`);const calendar=calendarActionContext(form);redirect(calendar?calendarHref(calendar,'appointment',{id,serviceChanged:'1'}):`/appointments/${id}?serviceChanged=1`);
 }
 
 export async function changeAppointmentStatus(_previous:{message:string},form:FormData){
