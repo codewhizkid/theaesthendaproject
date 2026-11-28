@@ -1,3 +1,4 @@
+/opt/homebrew/Library/Homebrew/cmd/shellenv.sh: line 18: /bin/ps: Operation not permitted
 import Link from 'next/link';
 import {WorkspacePage} from '@/components/layout/workspace-page';
 import {redirect} from 'next/navigation';
@@ -12,6 +13,7 @@ import {CalendarWorkspaceDialog} from '@/components/calendar/workspace-dialog';
 import {AppointmentBookingWorkspace} from '@/components/appointments/booking-workspace';
 import {AppointmentDetailsWorkspace} from '@/components/appointments/details-workspace';
 import {AppointmentRescheduleWorkspace} from '@/components/appointments/reschedule-workspace';
+import {AppointmentChangeServiceWorkspace} from '@/components/appointments/change-service-workspace';
 import {ClientProfileWorkspace,ClientCreateWorkspace} from '@/components/clients/profile-workspace';
 import {UndoButton} from '@/components/calendar/undo-button';
 export default async function CalendarPage({searchParams}:{searchParams:Promise<CalendarSearch>}){
@@ -30,5 +32,5 @@ export default async function CalendarPage({searchParams}:{searchParams:Promise<
   <form action="/calendar" className="ac-date-jump"><input type="hidden" name="view" value={view}/><label>Go to date<input type="date" name="date" required min="2000-01-01" max="2100-12-31" defaultValue={date}/></label><button>Go</button></form>
 
  </div>
-<CalendarGrid days={days} today={current.date} calendar={calendar}/></section><div className="ac-bottom-actions"><UndoButton key={undo?.id??'none'} change={undo}/></div>{panel&&<CalendarWorkspaceDialog businessName={business.businessName} key={`${panel}-${params.id??''}`} closeHref={calendarHref(calendar)} title={panel==='book'?'New appointment':panel==='reschedule'?'Reschedule appointment':panel==='client'?'Client profile':panel==='newclient'?'New client':'Appointment details'}>{panel==='newclient'?<ClientCreateWorkspace searchParams={Promise.resolve(params)} calendar={calendar}/>:panel==='book'?<AppointmentBookingWorkspace searchParams={Promise.resolve(params)} calendar={calendar}/>:panel==='appointment'?<AppointmentDetailsWorkspace params={Promise.resolve({id:params.id!})} searchParams={Promise.resolve(params)} calendar={calendar}/>:panel==='client'?<ClientProfileWorkspace params={Promise.resolve({id:params.id!})} searchParams={Promise.resolve(params)} calendar={calendar}/>:<AppointmentRescheduleWorkspace params={Promise.resolve({id:params.id!})} searchParams={Promise.resolve(params)} calendar={calendar}/>}</CalendarWorkspaceDialog>}</WorkspacePage>;
+<CalendarGrid days={days} today={current.date} calendar={calendar}/></section><div className="ac-bottom-actions"><UndoButton key={undo?.id??'none'} change={undo}/></div>{panel&&<CalendarWorkspaceDialog businessName={business.businessName} key={`${panel}-${params.id??''}`} closeHref={calendarHref(calendar)} title={panel==='book'?'New appointment':panel==='reschedule'?'Reschedule appointment':panel==='change-service'?'Change service':panel==='client'?'Client profile':panel==='newclient'?'New client':'Appointment details'}>{panel==='newclient'?<ClientCreateWorkspace searchParams={Promise.resolve(params)} calendar={calendar}/>:panel==='book'?<AppointmentBookingWorkspace searchParams={Promise.resolve(params)} calendar={calendar}/>:panel==='appointment'?<AppointmentDetailsWorkspace params={Promise.resolve({id:params.id!})} searchParams={Promise.resolve(params)} calendar={calendar}/>:panel==='client'?<ClientProfileWorkspace params={Promise.resolve({id:params.id!})} searchParams={Promise.resolve(params)} calendar={calendar}/>:panel==='change-service'?<AppointmentChangeServiceWorkspace params={Promise.resolve({id:params.id!})} searchParams={Promise.resolve(params)} calendar={calendar}/>:<AppointmentRescheduleWorkspace params={Promise.resolve({id:params.id!})} searchParams={Promise.resolve(params)} calendar={calendar}/>}</CalendarWorkspaceDialog>}</WorkspacePage>;
 }
